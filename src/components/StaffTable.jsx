@@ -5,7 +5,7 @@ const StaffTable = ({ staff, onEdit, onDelete, searchTerm, filters }) => {
     // Search term filter
     const matchesSearch = !searchTerm || 
       member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.staffId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(member.staffId).toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (member.department && member.department.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -118,7 +118,29 @@ const StaffTable = ({ staff, onEdit, onDelete, searchTerm, filters }) => {
                   <div className="truncate max-w-32" title={member.qualifications || '-'}>{member.qualifications || '-'}</div>
                 </td>
                 <td className="px-3 py-3 text-gray-900 dark:text-white whitespace-nowrap border-r border-gray-200 dark:border-gray-700">
-                  {member.experienceYears || 0}Y {member.experienceMonths || 0}M
+                  {(() => {
+                    const years = member.experienceYears || 0;
+                    const months = member.experienceMonths || 0;
+                    
+                    // If both are 0 or null, show "-"
+                    if (years === 0 && months === 0) return '-';
+                    
+                    // Calculate total days for better display
+                    const totalDays = (years * 365) + (months * 30);
+                    
+                    if (totalDays < 30) {
+                      return totalDays === 1 ? '1 day' : `${totalDays} days`;
+                    } else if (totalDays < 365) {
+                      const monthsOnly = Math.floor(totalDays / 30);
+                      return monthsOnly === 1 ? '1 month' : `${monthsOnly} months`;
+                    } else {
+                      if (months === 0) {
+                        return years === 1 ? '1 year' : `${years} years`;
+                      } else {
+                        return `${years}Y ${months}M`;
+                      }
+                    }
+                  })()}
                 </td>
                 <td className="px-3 py-3 text-gray-900 dark:text-white whitespace-nowrap border-r border-gray-200 dark:border-gray-700">
                   {formatDate(member.dateOfBirth)}

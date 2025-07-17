@@ -45,7 +45,7 @@ export const importFromExcel = (file) => {
 
           return {
             id: generateId(),
-            staffId: row['Staff ID'] || row['staffId'] || '',
+            staffId: String(row['Staff ID'] || row['staffId'] || ''),
             name: row['Name'] || row['name'] || '',
             mobile: String(row['Mobile No'] || row['mobile'] || ''),
             email: row['Email ID'] || row['email'] || '',

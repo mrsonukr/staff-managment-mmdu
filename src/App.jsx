@@ -110,7 +110,7 @@ function App() {
       // Search term filter
       const matchesSearch = !searchTerm || 
         member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.staffId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(member.staffId).toLowerCase().includes(searchTerm.toLowerCase()) ||
         member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         member.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (member.department && member.department.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -216,10 +216,10 @@ function App() {
             />
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
               <button
                 onClick={() => setIsFormOpen(true)}
-                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium w-full sm:w-auto justify-center sm:justify-start"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Staff</span>
@@ -227,7 +227,7 @@ function App() {
               
               <button
                 onClick={handleExport}
-                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto justify-center sm:justify-start"
                 disabled={getFilteredStaff().length === 0}
               >
                 <Download className="w-4 h-4" />
@@ -236,20 +236,20 @@ function App() {
 
               <button
                 onClick={() => setIsImportOpen(true)}
-                className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+                className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors font-medium w-full sm:w-auto justify-center sm:justify-start"
               >
                 <Upload className="w-4 h-4" />
                 <span>Import from XLSX</span>
               </button>
 
-              <div className="flex items-center space-x-2 ml-auto">
+              <div className="flex items-center space-x-2 w-full sm:w-auto sm:ml-auto">
                 <Search className="w-5 h-5 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search staff..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white w-80"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white w-full sm:w-80"
                 />
               </div>
             </div>
