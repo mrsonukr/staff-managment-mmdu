@@ -1,6 +1,6 @@
 import { Edit, Trash2, Eye } from 'lucide-react';
 
-const StaffTable = ({ staff, onEdit, onDelete, searchTerm, filters }) => {
+const StaffTable = ({ staff, onEdit, onDelete, searchTerm, filters, selectedStaff, onSelectStaff, onSelectAll }) => {
   const filteredStaff = staff.filter(member => {
     // Search term filter
     const matchesSearch = !searchTerm || 
@@ -44,11 +44,27 @@ const StaffTable = ({ staff, onEdit, onDelete, searchTerm, filters }) => {
     });
   };
 
+  const isAllSelected = filteredStaff.length > 0 && selectedStaff.size === filteredStaff.length;
+  const isIndeterminate = selectedStaff.size > 0 && selectedStaff.size < filteredStaff.length;
+
   return (
     <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
       <table className="w-full text-left border-collapse text-sm">
         <thead className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white">
           <tr>
+            <th className="px-3 py-3 border-b border-r border-gray-300 dark:border-gray-600 font-semibold whitespace-nowrap w-12">
+              <div className="flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = isIndeterminate;
+                  }}
+                  onChange={onSelectAll}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+              </div>
+            </th>
             <th className="px-3 py-3 border-b border-r border-gray-300 dark:border-gray-600 font-semibold whitespace-nowrap w-16">Sr. No</th>
             <th className="px-3 py-3 border-b border-r border-gray-300 dark:border-gray-600 font-semibold whitespace-nowrap w-20">Staff ID</th>
             <th className="px-3 py-3 border-b border-r border-gray-300 dark:border-gray-600 font-semibold whitespace-nowrap w-32">Name</th>
@@ -71,13 +87,25 @@ const StaffTable = ({ staff, onEdit, onDelete, searchTerm, filters }) => {
         <tbody>
           {filteredStaff.length === 0 ? (
             <tr>
-              <td colSpan="17" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+              <td colSpan="18" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                 {searchTerm ? 'No staff members found matching your search.' : 'No staff members added yet.'}
               </td>
             </tr>
           ) : (
             filteredStaff.map((member, index) => (
-              <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-200 dark:border-gray-700">
+              <tr key={member.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-200 dark:border-gray-700 ${
+                selectedStaff.has(member.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+              }`}>
+                <td className="px-3 py-3 text-gray-900 dark:text-white whitespace-nowrap border-r border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedStaff.has(member.id)}
+                      onChange={() => onSelectStaff(member.id)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </div>
+                </td>
                 <td className="px-3 py-3 text-gray-900 dark:text-white whitespace-nowrap border-r border-gray-200 dark:border-gray-700">
                   {index + 1}
                 </td>

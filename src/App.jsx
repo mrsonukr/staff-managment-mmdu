@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Download, Upload, Search, Sun, Moon, Users, LogOut } from 'lucide-react';
+import { Plus, Edit, Download, Upload, Search, Sun, Moon, Users, LogOut, Trash2, X } from 'lucide-react';
 import StaffForm from './components/StaffForm';
 import StaffTable from './components/StaffTable';
 import StatsCards from './components/StatsCards';
@@ -8,6 +8,7 @@ import FilterBar from './components/FilterBar';
 import ConfirmDialog from './components/ConfirmDialog';
 import ImportDialog from './components/ImportDialog';
 import PasscodeScreen from './components/PasscodeScreen';
+import SuccessToast from './components/SuccessToast';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useTheme } from './hooks/useTheme';
 import { useAuth } from './hooks/useAuth';
@@ -20,6 +21,8 @@ function App() {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStaff, setSelectedStaff] = useState(new Set());
+  const [successMessage, setSuccessMessage] = useState('');
   const [filters, setFilters] = useState({
     status: '',
     type: '',
@@ -46,6 +49,7 @@ function App() {
       createdAt: new Date().toISOString()
     };
     setStaff(prev => [...prev, newStaff]);
+    setSuccessMessage('Staff member added successfully!');
   };
 
   const handleEditStaff = (staffData) => {
@@ -55,6 +59,7 @@ function App() {
         : member
     ));
     setEditingStaff(null);
+    setSuccessMessage('Staff member updated successfully!');
   };
 
   const handleDeleteStaff = (id) => {
@@ -67,7 +72,16 @@ function App() {
   };
 
   const confirmDelete = () => {
-    setStaff(prev => prev.filter(member => member.id !== deleteConfirm.staffId));
+    if (deleteConfirm.staffId === 'selected') {
+      // Delete selected staff
+      setStaff(prev => prev.filter(member => !selectedStaff.has(member.id)));
+      setSuccessMessage(`Successfully deleted ${selectedStaff.size} staff member(s)!`);
+      setSelectedStaff(new Set());
+    } else {
+      // Delete single staff
+      setStaff(prev => prev.filter(member => member.id !== deleteConfirm.staffId));
+      setSuccessMessage('Staff member deleted successfully!');
+    }
     setDeleteConfirm({ isOpen: false, staffId: null, staffName: '' });
   };
 
@@ -76,11 +90,12 @@ function App() {
     const existingIds = new Set(staff.map(member => member.staffId));
     const newStaff = importedStaff.filter(member => !existingIds.has(member.staffId));
     
-    if (newStaff.length !== importedStaff.length) {
-      const duplicateCount = importedStaff.length - newStaff.length;
-      alert(`${duplicateCount} duplicate staff ID(s) were skipped. ${newStaff.length} new staff members imported.`);
+    const duplicateCount = importedStaff.length - newStaff.length;
+    
+    if (duplicateCount > 0) {
+      setSuccessMessage(`Successfully imported ${newStaff.length} staff members. ${duplicateCount} duplicate(s) were skipped.`);
     } else {
-      alert(`Successfully imported ${newStaff.length} staff members.`);
+      setSuccessMessage(`Successfully imported ${newStaff.length} staff members!`);
     }
     
     setStaff(prev => [...prev, ...newStaff]);
@@ -140,9 +155,44 @@ function App() {
     });
   };
 
-  const handleExport = () => {
+  const handleBulkDelete = () => {
+    if (selectedStaff.size === 0) return;
+    
+    setDeleteConfirm({
+      isOpen: true,
+      staffId: 'selected',
+      staffName: `${selectedStaff.size} selected staff member(s)`
+    });
+  };
+
+  const handleSelectAll = () => {
     const filteredStaff = getFilteredStaff();
-    exportToExcel(filteredStaff);
+    if (selectedStaff.size === filteredStaff.length) {
+      // Deselect all
+      setSelectedStaff(new Set());
+    } else {
+      // Select all filtered staff
+      setSelectedStaff(new Set(filteredStaff.map(member => member.id)));
+    }
+  };
+
+  const handleSelectStaff = (staffId) => {
+    const newSelected = new Set(selectedStaff);
+    if (newSelected.has(staffId)) {
+      newSelected.delete(staffId);
+    } else {
+      newSelected.add(staffId);
+    }
+    setSelectedStaff(newSelected);
+  };
+
+  const handleExport = () => {
+    const dataToExport = selectedStaff.size > 0 
+      ? staff.filter(member => selectedStaff.has(member.id))
+      : getFilteredStaff();
+    
+    exportToExcel(dataToExport);
+    setSuccessMessage(`Successfully exported ${dataToExport.length} staff member(s)!`);
   };
 
   const handleFilterChange = (newFilters) => {
@@ -216,7 +266,48 @@ function App() {
             />
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
+            <div className="space-y-4">
+              {/* Selection Actions */}
+              {selectedStaff.size > 0 && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">{selectedStaff.size}</span>
+                      </div>
+                      <span className="text-blue-800 dark:text-blue-200 font-medium">
+                        {selectedStaff.size} staff member(s) selected
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={handleExport}
+                        className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors text-sm"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Export Selected</span>
+                      </button>
+                      <button
+                        onClick={handleBulkDelete}
+                        className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition-colors text-sm"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Delete Selected</span>
+                      </button>
+                      <button
+                        onClick={() => setSelectedStaff(new Set())}
+                        className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition-colors text-sm"
+                      >
+                        <X className="w-4 h-4" />
+                        <span>Clear Selection</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Main Action Buttons */}
+              <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4">
               <button
                 onClick={() => setIsFormOpen(true)}
                 className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium w-full sm:w-auto justify-center sm:justify-start"
@@ -227,11 +318,18 @@ function App() {
               
               <button
                 onClick={handleExport}
-                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto justify-center sm:justify-start"
-                disabled={getFilteredStaff().length === 0}
+                className={`flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto justify-center sm:justify-start ${
+                  selectedStaff.size > 0 ? 'ring-2 ring-green-300' : ''
+                }`}
+                disabled={selectedStaff.size === 0 && getFilteredStaff().length === 0}
               >
                 <Download className="w-4 h-4" />
-                <span>Export Filtered Data</span>
+                <span>
+                  {selectedStaff.size > 0 
+                    ? `Export Selected (${selectedStaff.size})` 
+                    : 'Export All Data'
+                  }
+                </span>
               </button>
 
               <button
@@ -253,6 +351,7 @@ function App() {
                 />
               </div>
             </div>
+            </div>
 
             {/* Staff Table */}
             <StaffTable
@@ -261,10 +360,19 @@ function App() {
               onDelete={handleDeleteStaff}
               searchTerm={searchTerm}
               filters={filters}
+              selectedStaff={selectedStaff}
+              onSelectStaff={handleSelectStaff}
+              onSelectAll={handleSelectAll}
             />
           </div>
         </div>
       </div>
+
+      {/* Success Toast */}
+      <SuccessToast 
+        message={successMessage} 
+        onClose={() => setSuccessMessage('')} 
+      />
 
       {/* Staff Form Modal */}
       <StaffForm
