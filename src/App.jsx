@@ -316,21 +316,17 @@ function App() {
                 <span>Add Staff</span>
               </button>
               
-              <button
-                onClick={handleExport}
-                className={`flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto justify-center sm:justify-start ${
-                  selectedStaff.size > 0 ? 'ring-2 ring-green-300' : ''
-                }`}
-                disabled={selectedStaff.size === 0 && getFilteredStaff().length === 0}
-              >
-                <Download className="w-4 h-4" />
-                <span>
-                  {selectedStaff.size > 0 
-                    ? `Export Selected (${selectedStaff.size})` 
-                    : 'Export All Data'
-                  }
-                </span>
-              </button>
+              {/* Only show export all when no staff are selected */}
+              {selectedStaff.size === 0 && (
+                <button
+                  onClick={handleExport}
+                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto justify-center sm:justify-start"
+                  disabled={getFilteredStaff().length === 0}
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Export All Data</span>
+                </button>
+              )}
 
               <button
                 onClick={() => setIsImportOpen(true)}

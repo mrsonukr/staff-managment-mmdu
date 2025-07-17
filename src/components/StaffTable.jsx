@@ -61,7 +61,7 @@ const StaffTable = ({ staff, onEdit, onDelete, searchTerm, filters, selectedStaf
                     if (el) el.indeterminate = isIndeterminate;
                   }}
                   onChange={onSelectAll}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800 transition-all duration-200 hover:border-blue-400 dark:hover:border-blue-400 cursor-pointer"
                 />
               </div>
             </th>
@@ -102,7 +102,7 @@ const StaffTable = ({ staff, onEdit, onDelete, searchTerm, filters, selectedStaf
                       type="checkbox"
                       checked={selectedStaff.has(member.id)}
                       onChange={() => onSelectStaff(member.id)}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                      className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-500 rounded-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800 transition-all duration-200 hover:border-blue-400 dark:hover:border-blue-400 cursor-pointer"
                     />
                   </div>
                 </td>
